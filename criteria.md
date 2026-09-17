@@ -19,8 +19,7 @@ pipeline earns credit; *"80% seemed reasonable"* does not.
 
 ## 1. Retrieved chunks contain the answer
 
-For at least 4 of my 5 test questions, the retrieved chunks include one that
-contains the answer.
+For at least 4 of my 5 test questions, the retrieved chunks include one that contains the answer.
 
 **Why this target:**
 <!-- e.g. "One of my questions is about a topic only two documents mention, so
@@ -40,9 +39,7 @@ Every answer the system produces names at least one source document.
 
 ## 3. The relevance gate stops out-of-corpus questions
 
-When I ask a question my documents clearly don't cover, the relevance gate
-stops it and the system returns "I don't have enough information about that" —
-in at least 4 of 5 tries.
+When I ask a question my documents clearly don't cover, the relevance gate stops it and the system returns "I don't have enough information about that" — in at least 4 of 5 tries.
 
 <!-- The five questions are the ones in `OUT_OF_SCOPE` at the bottom of
      `questions.py`, and `run_eval.py` puts them through the gate and writes
@@ -69,11 +66,11 @@ in at least 4 of 5 tries.
        - "No chunk is shorter than 200 characters, since anything below that
           in my corpus turned out to be a heading with no content under it." -->
 
-
+At least 4 out of 5 chunks must be between 100 and 400 characters.
 
 **Why this target:**
 
-
+Good chunks naturally fall into this range, and in case a relevant one does fall outside it, there is leeway for 1/5 chunks.
 
 ---
 
@@ -87,11 +84,11 @@ in at least 4 of 5 tries.
      present — anything, as long as it names a number or an observable
      outcome. -->
 
-
+Every chunk must contain at least one subject and one predicate.
 
 **Why this target:**
 
-
+These are the 2 main parts of a sentence. A complete thought cannot be chunked without these 2 parts, and good chunks are completed thoughts that can answer questions.
 
 ---
 
