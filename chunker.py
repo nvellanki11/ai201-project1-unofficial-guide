@@ -80,24 +80,93 @@ def fallback_split(
     return chunks
 
 
-def split_documents(documents: list[Document]) -> list[Chunk]:
+def _split_paragraph(paragraph: str, chunk_size: int, overlap: int) -> list[str]:
+    """Break one over-long paragraph into character windows, on sentence ends where possible."""
+    pieces: list[str] = []
+    start = 0
+    text = paragraph
+    while start < len(text):
+        end = start + chunk_size
+        if end < len(text):
+            # try to end on a sentence boundary within this window
+            boundary = max(text.rfind(". ", start, end), text.rfind("\n", start, end))
+            if boundary > start:
+                end = boundary + 1
+        piece = text[start:end].strip()
+        if piece:
+            pieces.append(piece)
+        if end >= len(text):
+            break
+        start = end - overlap
+    return pieces
+
+
+def split_documents(
+    documents: list[Document],
+    chunk_size: int | None = None,
+    overlap: int | None = None,
+) -> list[Chunk]:
     """
-    Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
+    Split documents into chunks, sized to fit what's actually in them.
 
-    Right now it just calls the fallback. That is the plain, generic behaviour
-    the brief is talking about.
-
-    When you write your own strategy, set `produced_by` to
-    "chunker.py::split_documents" so your README's Sample Chunks section names
-    the right function. `app.py chunks` prints that string for you.
-
-    Things worth thinking about before you write any code:
-      - Are your documents short posts or long guides?
-      - Is the useful information in one sentence, or spread over a paragraph?
-      - Would splitting on paragraph breaks keep more thoughts intact than
-        splitting on a character count?
+    Short documents (posts, one-off announcements) stay a single chunk —
+    splitting a 200-character post in two loses more context than it gains.
+    Longer documents (guides) split on paragraph breaks, so a chunk never
+    straddles two unrelated topics; if a single paragraph is itself longer
+    than chunk_size, it falls back to a sentence-aware character window with
+    overlap, same as `fallback_split`, but scoped to that one paragraph.
     """
-    return fallback_split(documents)
+    chunk_size = chunk_size or config.CHUNK_SIZE
+    overlap = overlap or config.CHUNK_OVERLAP
+
+    chunks: list[Chunk] = []
+    for doc in documents:
+        text = doc.text.strip()
+
+        if len(text) <= chunk_size:
+            chunks.append(
+                Chunk(
+                    text=text,
+                    source=doc.source,
+                    index=0,
+                    produced_by="chunker.py::split_documents",
+                )
+            )
+            continue
+
+        paragraphs = [p.strip() for p in text.split("\n\n") if p.strip()]
+
+        pieces: list[str] = []
+        buffer = ""
+        for paragraph in paragraphs:
+            candidate = f"{buffer}\n\n{paragraph}" if buffer else paragraph
+            if len(candidate) <= chunk_size:
+                buffer = candidate
+                continue
+
+            if buffer:
+                pieces.append(buffer)
+                buffer = ""
+
+            if len(paragraph) <= chunk_size:
+                buffer = paragraph
+            else:
+                pieces.extend(_split_paragraph(paragraph, chunk_size, overlap))
+
+        if buffer:
+            pieces.append(buffer)
+
+        for index, piece in enumerate(pieces):
+            chunks.append(
+                Chunk(
+                    text=piece,
+                    source=doc.source,
+                    index=index,
+                    produced_by="chunker.py::split_documents",
+                )
+            )
+
+    return chunks
 
 
 def describe(chunks: list[Chunk]) -> str:
