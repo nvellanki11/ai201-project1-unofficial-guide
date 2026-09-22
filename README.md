@@ -21,37 +21,17 @@
 
 ## What This Does
 
-<!-- Three or four sentences. Which corpus you picked, and the kinds of
-     questions your system answers. Write it for someone who has never seen
-     this repo.
-
-     Milestone 5. -->
+This is a RAG system that ingested, chunked, embedded and stored information from a corpora of documents about personal advice, campus life or city guides for many different places. It has been tested on a series of prompts and (mostly) grounded to prevent fabrication of data. To use the model, run "python app.py ask "Question in here"" and it will output a formatted response to answer your request, or say that it does not have enough information. 
 
 ## Chunking Strategy
 
 **Chunk size:**
 **Overlap:**
 
-<!-- What about YOUR documents made you pick these numbers? Short posts and
-     long sectioned guides don't want the same chunking, and "800 seemed
-     reasonable" earns nothing. Point at something you noticed when you read
-     the documents in Milestone 1.
-
-     If you changed your mind partway through, say so and say why. That's worth
-     more than pretending you got it right first time.
-
-     Milestone 3. -->
+     At the moment the strategy is taking chunk size up to 800 chars. Documents smaller then this in length will be kept together while larger documents get chunked. I chose this approach because when I scrolled through the different corpus documents, I noticed longer docs with paragraphs of nearly this length, but also much more confined docs, which could pass as one context chunk. These longer docs with multiple chunks have an overlap of 120 chars (15% of max size).
 
 ## Sample Chunks
 
-<!-- Five chunks, pasted as text. Label each one and name the file it came from
-     AND the function that produced it — the grader checks your code against
-     what you claim here.
-
-     `python app.py chunks -n 5` prints all three for you. Copy them straight
-     across.
-
-     Milestone 3. -->
 
      ======================================================================
 Chunk 1  |  source: admin_add_drop_deadline.txt#0  |  produced by: chunker.py::split_documents
@@ -105,41 +85,55 @@ Laundry costs $1.75 wash, $1.75 dry, app-based. On noise: moderate; the building
 
 ## Sample Answer
 
-<!-- One complete question and answer, pasted as text, with the source line
-     visible. Milestone 4. -->
-
 **Question:**
+
+How many hours a week does CS 340 Databases take once the project lands? — run 3
 
 **Answer:**
 
-```
-```
+CS 340 Databases takes 15 hours a week in the last three weeks when the project lands. This information comes from the documents `course_cs_340_workload.txt` and `course_cs_340.txt`.
 
 **My relevance cutoff:**
 
-<!-- The number you set in config.py, and how you got there.
+What are the wait times at Kestrel Commons during lunch?
+  run 1: —  (best distance 0.173)
+  run 2: —  (best distance 0.173)
+  run 3: —  (best distance 0.173)
 
-     You ran five questions your corpus covers and the five in OUT_OF_SCOPE
-     that it clearly doesn't, and wrote down the best distance for each. What
-     did those two groups look like? Where was the gap? Put the actual numbers
-     here — the table below wants all ten rows.
+How many washers and dryers are in Calder Annexe, and when should I avoid doing laundry there?
+  run 1: —  (best distance 0.204)
+  run 2: —  (best distance 0.204)
+  run 3: —  (best distance 0.204)
 
-     Milestone 4. -->
+How many hours a week does CS 340 Databases take once the project lands?
+  run 1: —  (best distance 0.163)
+  run 2: —  (best distance 0.163)
+  run 3: —  (best distance 0.163)
 
-| Question | In corpus? | Best distance |
-|---|---|---|
-|  |  |  |
+How often does the campus shuttle run on weekdays?
+  run 1: —  (best distance 0.425)
+  run 2: —  (best distance 0.425)
+  run 3: —  (best distance 0.425)
+
+What advice do students give about commuting an hour each way?
+  run 1: —  (best distance 0.595)
+  run 2: —  (best distance 0.595)
+  run 3: —  (best distance 0.595)
+
+Out-of-scope questions (the gate should refuse these):
+  refused  (best distance 0.825)  What is the capital of Mongolia?
+  refused  (best distance 0.934)  How do I change the oil in a diesel engine?
+  refused  (best distance 0.886)  Who won the 1994 World Cup?
+  refused  (best distance 0.844)  What is the recommended dosage of ibuprofen for a headache?
+  refused  (best distance 0.896)  How do I write a for loop in Rust?
+
+
+  The gap is at about 0.6, which would prevent fabrication for well out-of-scope questions, but the model would attempt some more challenging, slightly ambiguous questions. I prefer it this way, but may eventually reduce to 0.5 as the final question was not answered by the model.
 
 ## How I Used AI
 
-<!-- Two specific moments. For each: what you asked for, what came back, and
-     what you changed about it.
-
-     "I asked Claude to write the chunking function from my notes. It ignored
-     the overlap, so I added that myself" is the level of detail we're after.
-     "I used AI to help me code" is not.
-
-     Milestone 5. -->
+I brainstormed a chunking strategy based on my own intuition and the context of the documents, and refined it with Claude (it suggested the overlay amount). 
+I also used it regularly for code generation, and would choose to either accept, deny or modify the suggested changes based on the specs of the assignment.
 
 **1.**
 
